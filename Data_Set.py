@@ -21,6 +21,17 @@ class DataSet:
             "G": np.array([0, 1, 0, 0], dtype=np.int8),
             "C": np.array([0, 0, 1, 0], dtype=np.int8),
             "T": np.array([0, 0, 0, 1], dtype=np.int8),
+            "U": np.array([0, 0, 0, 1], dtype=np.int8),
+            "W": np.array([1, 0, 0, 1], dtype=np.int8),
+            "S": np.array([0, 1, 1, 0], dtype=np.int8),
+            "M": np.array([1, 0, 1, 0], dtype=np.int8),
+            "K": np.array([0, 1, 0, 1], dtype=np.int8),
+            "R": np.array([1, 1, 0, 0], dtype=np.int8),
+            "Y": np.array([0, 0, 1, 1], dtype=np.int8),
+            "B": np.array([0, 1, 1, 1], dtype=np.int8),
+            "D": np.array([1, 1, 0, 1], dtype=np.int8),
+            "H": np.array([1, 0, 1, 1], dtype=np.int8),
+            "V": np.array([1, 1, 1, 0], dtype=np.int8),
             "N": np.array([0, 0, 0, 0], dtype=np.int8)
         }
         self.virus_label_dictionary = None
