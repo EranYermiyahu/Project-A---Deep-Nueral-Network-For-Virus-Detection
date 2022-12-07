@@ -10,11 +10,12 @@ from itertools import repeat
 
 
 if __name__ == '__main__':
-    data_set = DataSet(["Metapneumovirus"])
-    # data_set = DataSet()
+    # data_set = DataSet(["Test_Virus"])
+    data_set = DataSet()
+    data_set.create_labels_from_virus_list()
     data_set.segment_creation_from_fna()
     data_set.all_viruses_fragments()
-    data_set.fragment_to_token(data_set.all_fragments_by_virus[0][0])
+    data_set.viruses_to_tfr_files()
 
 
 
