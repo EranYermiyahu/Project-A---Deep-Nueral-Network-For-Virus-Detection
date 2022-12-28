@@ -15,6 +15,12 @@ if __name__ == '__main__':
     token_frags_list, labels_list = dna_seq.generate_tokens_and_labels_from_scratch()
     data_set = DataSet(dna_seq.Viruses_list)
     data_set.create_tfrecords(token_frags_list, labels_list)
+    train_set = data_set.create_train_dataset()
+    print("Michal Maymon Is beautiful")
+    print(train_set)
+    for x, y in train_set:
+        print(x[0])
+        # print(y)
 
 
 

@@ -17,6 +17,7 @@ class DNASeq:
         self.viruses_num = len(virus_list)
         self.fragment_size = fragment_size
         self.fasta_files_path = fasta_files_path
+        # self.tensor_shape = (self.fragment_size, len(self.nuc_translation_dictionary['A'])
         # self.train_tfr_paths = None
         self.nuc_translation_dictionary = {
             "A": np.array([1, 0, 0, 0], dtype=np.int8),
@@ -58,7 +59,6 @@ class DNASeq:
             pos += 1
         print(label_dict)
         return label_dict
-
 
     def segments_from_fna_file(self, fna_file_name):
         cur_file = open(fna_file_name, 'r')

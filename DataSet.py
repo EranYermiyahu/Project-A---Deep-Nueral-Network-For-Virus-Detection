@@ -11,12 +11,30 @@ import random
 
 
 class DataSet:
-    def __init__(self, virus_list, data_files_path='../TFRecords'):
+    def __init__(self, virus_list, data_files_path='../TFRecords', fragment_size=150, nuc_to_token_base=4,\
+                 train_per=0.95):
         self.Viruses_list = virus_list
         self.viruses_num = len(virus_list)
+        self.fragment_size = fragment_size
+        self.nuc_base_count = nuc_to_token_base
         self.tfr_paths_list = [data_files_path + '/' + virus + '.tfrecord' for virus in self.Viruses_list]
+        self.valid_per = 1 - train_per
+        self.train_per = train_per
+        # self.epochs = epochs
+        # self.batch_size = batch_size
 
-
+    def create_train_dataset(self, epochs=1, batch_size=128, shuffle_buffer_size=4096):
+        filepath_dataset = tf.data.Dataset.list_files(self.get_tfr_paths())
+        train_set = filepath_dataset.interleave(map_func=lambda filepath: tf.data.TFRecordDataset(filepath),
+                                                num_parallel_calls=tf.data.AUTOTUNE,
+                                                cycle_length=self.viruses_num). \
+            map(map_func=lambda example_proto: self.deserialize_genome_tensor(example_proto),
+                num_parallel_calls=tf.data.AUTOTUNE). \
+            repeat(epochs). \
+            shuffle(shuffle_buffer_size). \
+            batch(batch_size). \
+            prefetch(tf.data.AUTOTUNE)
+        return train_set
 
     def serialized_tensor(self, tensor: tf.Tensor, label: tf.Tensor) -> tf.train.Example:
         # Serialize the tensor
@@ -41,10 +59,11 @@ class DataSet:
         )
         return example_proto
 
-    # def create_single_path(self, virus_name):
-    #     return self.data_files_path + '/{}.tfrecord'.format(virus_name)
+    def get_tfr_paths(self):
+        return self.tfr_paths_list
 
     def write_fragments_to_tfr(self, fragments, label, tfr_file_path, shuffle=False):
+        # print('~~~~~')
         Serialized_Tensor_list = list(map(self.serialized_tensor, fragments, repeat(label)))
         if shuffle is True:
             random.shuffle(Serialized_Tensor_list)
@@ -56,4 +75,17 @@ class DataSet:
         for virus_idx in range(self.viruses_num):
             self.write_fragments_to_tfr(list_token_frags[virus_idx], list_labels[virus_idx], self.tfr_paths_list[virus_idx])
 
+    feature_description = {
+        'tensor': tf.io.FixedLenFeature([], tf.string),
+        'label': tf.io.FixedLenFeature([], tf.string)
+    }
 
+    def deserialize_genome_tensor(self, example_proto):
+        feature_map = tf.io.parse_single_example(example_proto, self.feature_description)
+        tensor_shape = [self.fragment_size, self.nuc_base_count]
+        label_shape = [self.viruses_num]
+        tensor = tf.ensure_shape(tf.io.parse_tensor(feature_map['tensor'], out_type=tf.int8), tensor_shape)
+        tensor = tf.cast(tensor, tf.float32)
+        label = tf.ensure_shape(tf.io.parse_tensor(feature_map['label'], out_type=tf.int8), label_shape)
+        label = tf.cast(label, tf.float32)
+        return tensor, label
