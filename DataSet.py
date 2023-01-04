@@ -6,35 +6,30 @@ import tensorflow_datasets as tfds
 import os
 import os.path
 import glob
+from sklearn.model_selection import train_test_split
 from itertools import repeat
 import random
 
 
 class DataSet:
-    def __init__(self, virus_list, data_files_path='../TFRecords', fragment_size=150, nuc_to_token_base=4,\
-                 train_per=0.95):
+    def __init__(self, virus_list, data_files_path='../TFRecords', fragment_size=150,
+                 nuc_to_token_base=4, train_percentage=0.95):
         self.Viruses_list = virus_list
         self.viruses_num = len(virus_list)
         self.fragment_size = fragment_size
         self.nuc_base_count = nuc_to_token_base
         self.tfr_paths_list = [data_files_path + '/' + virus + '.tfrecord' for virus in self.Viruses_list]
-        self.valid_per = 1 - train_per
-        self.train_per = train_per
-        # self.epochs = epochs
-        # self.batch_size = batch_size
+        self.train_per = train_percentage
+        self.complete_dataset_size = None
 
-    def create_train_dataset(self, epochs=1, batch_size=128, shuffle_buffer_size=4096):
+    def create_dataset(self):
         filepath_dataset = tf.data.Dataset.list_files(self.get_tfr_paths())
-        train_set = filepath_dataset.interleave(map_func=lambda filepath: tf.data.TFRecordDataset(filepath),
-                                                num_parallel_calls=tf.data.AUTOTUNE,
-                                                cycle_length=self.viruses_num). \
+        complete_data_set = filepath_dataset.interleave(map_func=lambda filepath: tf.data.TFRecordDataset(filepath),
+                                                        num_parallel_calls=tf.data.AUTOTUNE,
+                                                        cycle_length=self.viruses_num). \
             map(map_func=lambda example_proto: self.deserialize_genome_tensor(example_proto),
-                num_parallel_calls=tf.data.AUTOTUNE). \
-            repeat(epochs). \
-            shuffle(shuffle_buffer_size). \
-            batch(batch_size). \
-            prefetch(tf.data.AUTOTUNE)
-        return train_set
+                num_parallel_calls=tf.data.AUTOTUNE)
+        return complete_data_set
 
     def serialized_tensor(self, tensor: tf.Tensor, label: tf.Tensor) -> tf.train.Example:
         # Serialize the tensor
@@ -89,3 +84,21 @@ class DataSet:
         label = tf.ensure_shape(tf.io.parse_tensor(feature_map['label'], out_type=tf.int8), label_shape)
         label = tf.cast(label, tf.float32)
         return tensor, label
+
+    def config_data_features(self, raw_dataset, epochs=1, batch_size=512, shuffle_buffer_size=4096):
+        config_data_set = raw_dataset.repeat(epochs). \
+                    shuffle(shuffle_buffer_size). \
+                    batch(batch_size). \
+                    prefetch(tf.data.AUTOTUNE)
+        return config_data_set
+
+    def split_to_train_and_test_dataset(self, raw_dataset, train_percentage=0.95, epochs=1,
+                                        train_batch_size=128, test_batch_size=128, shuffle_buffer_size=4096):
+        self.complete_dataset_size = int(raw_dataset.reduce(np.int64(0), lambda x, _: x + 1))
+        train_set_size = int(train_percentage * self.complete_dataset_size)
+        train_dataset_raw = raw_dataset.take(train_set_size)
+        test_dataset_raw = raw_dataset.skip(train_set_size)
+        train_dataset = self.config_data_features(train_dataset_raw, epochs=epochs, batch_size=train_batch_size, shuffle_buffer_size=shuffle_buffer_size)
+        test_dataset = self.config_data_features(test_dataset_raw, batch_size=test_batch_size, shuffle_buffer_size=shuffle_buffer_size)
+        return train_dataset, test_dataset
+
