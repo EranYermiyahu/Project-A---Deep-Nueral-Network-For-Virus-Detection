@@ -6,16 +6,17 @@ import tensorflow_datasets as tfds
 
 
 class LogisticRegression(keras.Model):
-    def __init__(self, num_of_classes):
+    def __init__(self, input_shape, num_classes):
         # Initialize the father -  requires to implement abstracts
         super(LogisticRegression, self).__init__(name='LogisticRegression')
         # Layers
-        self.linear_logistic_reg_layer = keras.layers.Dense(num_of_classes, activation='softmax')
+        self.num_classes = num_classes
+        self.flatter_layer = tf.keras.layers.Flatten(input_shape=input_shape)
+        self.linear_logistic_reg_layer = keras.layers.Dense(self.num_classes, activation='softmax')
 
     def call(self, inputs):
-        return self.linear_logistic_reg_layer(inputs)
-
-
+        middle = self.flatter_layer(inputs)
+        return self.linear_logistic_reg_layer(middle)
 
 
 
