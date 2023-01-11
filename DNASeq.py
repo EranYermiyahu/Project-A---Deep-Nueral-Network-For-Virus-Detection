@@ -1,8 +1,6 @@
 
 import numpy as np
 import tensorflow as tf
-import tensorflow_io as tfio
-import tensorflow_datasets as tfds
 import os
 import os.path
 import glob

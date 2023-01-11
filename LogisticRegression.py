@@ -1,8 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-import tensorflow_io as tfio
-import tensorflow_datasets as tfds
+
 
 
 class LogisticRegression(keras.Model):
