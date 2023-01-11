@@ -85,7 +85,7 @@ class DataSet:
         label = tf.cast(label, tf.float32)
         return tensor, label
 
-    def config_data_features(self, raw_dataset, epochs=1, batch_size=512, shuffle_buffer_size=4096):
+    def config_data_features(self, raw_dataset, epochs=1, batch_size=128, shuffle_buffer_size=4096):
         config_data_set = raw_dataset.repeat(epochs). \
                     shuffle(shuffle_buffer_size). \
                     batch(batch_size). \
@@ -93,11 +93,14 @@ class DataSet:
         return config_data_set
 
     def split_to_train_and_test_dataset(self, raw_dataset, train_percentage=0.95, epochs=1,
-                                        train_batch_size=128, test_batch_size=128, shuffle_buffer_size=4096):
+                                        train_batch_size=128, test_batch_size=128, shuffle_buffer_size=4096, rand_seed=42):
         self.complete_dataset_size = int(raw_dataset.reduce(np.int64(0), lambda x, _: x + 1))
         train_set_size = int(train_percentage * self.complete_dataset_size)
-        train_dataset_raw = raw_dataset.take(train_set_size)
-        test_dataset_raw = raw_dataset.skip(train_set_size)
+        print(train_set_size)
+        # Shuffle before splitting
+        shuffled_dataset = raw_dataset.shuffle(buffer_size=self.complete_dataset_size, seed=rand_seed)
+        train_dataset_raw = shuffled_dataset.take(train_set_size)
+        test_dataset_raw = shuffled_dataset.skip(train_set_size)
         train_dataset = self.config_data_features(train_dataset_raw, epochs=epochs, batch_size=train_batch_size, shuffle_buffer_size=shuffle_buffer_size)
         test_dataset = self.config_data_features(test_dataset_raw, batch_size=test_batch_size, shuffle_buffer_size=shuffle_buffer_size)
         return train_dataset, test_dataset
