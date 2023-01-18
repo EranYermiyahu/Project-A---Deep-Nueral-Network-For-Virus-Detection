@@ -11,10 +11,11 @@ class LogisticRegression(keras.Model):
         # Layers
         self.num_classes = num_classes
         self.flatter_layer = tf.keras.layers.Flatten(input_shape=input_shape)
+        self.middle_layer = keras.layers.Dense(200, activation='relu')
         self.linear_logistic_reg_layer = keras.layers.Dense(self.num_classes, activation='softmax')
 
     def call(self, inputs):
-        middle = self.flatter_layer(inputs)
+        middle = self.middle_layer(self.flatter_layer(inputs))
         return self.linear_logistic_reg_layer(middle)
 
 

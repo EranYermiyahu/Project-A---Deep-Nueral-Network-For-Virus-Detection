@@ -10,7 +10,6 @@ from itertools import repeat
 
 
 if __name__ == '__main__':
-    # I Love You
     dna_seq = DNASeq(virus_list=["Coronaviridae", "InfluenzaA", "Metapneumovirus", "Rhinovirus", "SarsCov2"])
     token_frags_list, labels_list = dna_seq.generate_tokens_and_labels_from_scratch()
     data_set = DataSet(dna_seq.Viruses_list)
