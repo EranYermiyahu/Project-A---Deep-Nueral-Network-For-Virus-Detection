@@ -42,10 +42,10 @@ class DNASeq:
         self.all_tokened_frags_by_virus = None
 
     def set_all_segments_by_virus(self, seg_by_vir_list):
-        self.all_segments_by_virus = np.asarray(seg_by_vir_list)
+        self.all_segments_by_virus = seg_by_vir_list
 
     def set_all_tokened_frags_by_virus(self, tokened_frags_by_vir_list):
-        self.all_tokened_frags_by_virus = np.asarray(tokened_frags_by_vir_list)
+        self.all_tokened_frags_by_virus = tokened_frags_by_vir_list
 
     def create_labels_from_virus_list(self):
         if self.Viruses_list is None:
@@ -55,7 +55,7 @@ class DNASeq:
         for virus in self.Viruses_list:
             label_dict[virus] = np.array([1 if i == pos else 0 for i in range(self.viruses_num)], dtype=np.int8)
             pos += 1
-        print(label_dict)
+        print(f"The labels representation of the given Viruses is :\n{label_dict}")
         return label_dict
 
     def segments_from_fna_file(self, fna_file_name):
