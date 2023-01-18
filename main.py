@@ -10,7 +10,7 @@ from itertools import repeat
 
 
 if __name__ == '__main__':
-    dna_seq = DNASeq(virus_list=["Coronaviridae", "InfluenzaA", "Metapneumovirus", "Rhinovirus", "SarsCov2"], fasta_files_path='../Viruses Raw Data/Test_Virus/')
+    dna_seq = DNASeq(virus_list=["Coronaviridae", "InfluenzaA", "Metapneumovirus", "Rhinovirus", "SarsCov2"])
     token_frags_list, labels_list = dna_seq.generate_tokens_and_labels_from_scratch()
     data_set = DataSet(dna_seq.Viruses_list)
     data_set.create_tfrecords(token_frags_list, labels_list)
