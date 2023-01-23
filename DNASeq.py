@@ -40,12 +40,23 @@ class DNASeq:
         self.all_segments_by_virus = None
         # self.all_fragments_by_virus = None
         self.all_tokened_frags_by_virus = None
+        self.all_tokened_frags_by_virus_balanced = None
+
 
     def set_all_segments_by_virus(self, seg_by_vir_list):
         self.all_segments_by_virus = seg_by_vir_list
 
     def set_all_tokened_frags_by_virus(self, tokened_frags_by_vir_list):
         self.all_tokened_frags_by_virus = tokened_frags_by_vir_list
+        # num_of_tokens = []
+        # cut_list = []
+        # for virus in tokened_frags_by_vir_list:
+        #     random.shuffle(virus)
+        #     num_of_tokens.append(len(virus))
+        # exp_size = min(num_of_tokens)
+        # for virus in tokened_frags_by_vir_list:
+        #     cut_list.append(virus[:exp_size])
+        # self.all_tokened_frags_by_virus_balanced = cut_list
 
     def create_labels_from_virus_list(self):
         if self.Viruses_list is None:
@@ -54,6 +65,7 @@ class DNASeq:
         label_dict = {}
         for virus in self.Viruses_list:
             label_dict[virus] = np.array([1 if i == pos else 0 for i in range(self.viruses_num)], dtype=np.int8)
+            label_dict[virus] = tf.convert_to_tensor(label_dict[virus])
             pos += 1
         print(f"The labels representation of the given Viruses is :\n{label_dict}")
         return label_dict
@@ -117,7 +129,7 @@ class DNASeq:
         list_token_frags = []
         list_labels = []
         for virus_idx in range(self.viruses_num):
-            tokened_frags = self.all_tokened_frags_by_virus[virus_idx]
+            tokened_frags = self.all_tokened_frags_by_virus[virus_idx] # changed to balanced
             v_label = self.virus_label_dictionary[self.Viruses_list[virus_idx]]
             # v_path = self.create_single_path(self.Viruses_list[virus_idx])
             list_token_frags.append(tokened_frags)

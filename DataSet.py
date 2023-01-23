@@ -34,7 +34,7 @@ class DataSet:
                     prefetch(tf.data.AUTOTUNE)
         return config_data_set
 
-    def create_train_dataset(self, epochs=100, train_batch_size=1024, shuffle_buffer_size=4096):
+    def create_train_dataset(self, epochs=150, train_batch_size=4096, shuffle_buffer_size=4096):
         filepath_dataset = tf.data.Dataset.list_files(self.get_train_tfr_paths())
         train_dataset_raw = filepath_dataset.interleave(map_func=lambda filepath: tf.data.TFRecordDataset(filepath),
                                                         num_parallel_calls=tf.data.AUTOTUNE,
@@ -47,7 +47,7 @@ class DataSet:
                                                   shuffle_buffer_size=shuffle_buffer_size)
         return train_dataset
 
-    def create_test_dataset(self, test_batch_size=1024, shuffle_buffer_size=4096):
+    def create_test_dataset(self, test_batch_size=128, shuffle_buffer_size=4096):
         filepath_dataset = tf.data.Dataset.list_files(self.get_test_tfr_paths())
         test_data_set_raw = filepath_dataset.interleave(map_func=lambda filepath: tf.data.TFRecordDataset(filepath),
                                                         num_parallel_calls=tf.data.AUTOTUNE,
@@ -59,6 +59,25 @@ class DataSet:
         test_dataset = self.config_data_features(test_data_set_raw, batch_size=test_batch_size,
                                                  shuffle_buffer_size=shuffle_buffer_size)
         return test_dataset
+
+    def print_labels_histogram(self, dataset, virus_library):
+        counter = 0
+        for tokens, labels in dataset:
+            how_much_labels_in_batch_dict = {"Coronaviridae": 0, "InfluenzaA": 0, "Metapneumovirus": 0, "Rhinovirus": 0,
+                                             "SarsCov2": 0}
+            # ret_val = model.call(tokens)
+            for label in labels:
+                for key, val in virus_library.items():
+                    print(f"{val}\n{label}")
+                    val_virus_idx = int(tf.argmax(val))
+                    label_virus_idx = int(tf.argmax(label))
+                    if val_virus_idx == label_virus_idx:
+                        how_much_labels_in_batch_dict[key] += 1
+                        break
+            counter = counter+1
+            if counter >= 1000:
+                print("hi")
+            print(how_much_labels_in_batch_dict)
 
     def write_fragments_to_tfr(self, fragments, label, tfr_file_path, shuffle=False):
         Serialized_Tensor_list = list(map(self.serialized_tensor, fragments, repeat(label)))
@@ -115,4 +134,5 @@ class DataSet:
             features=tf.train.Features(feature=features_for_example)
         )
         return example_proto
+
 
