@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+from datetime import datetime
 import os
 import os.path
 import glob
@@ -12,8 +13,10 @@ from itertools import repeat
 
 if __name__ == '__main__':
 
+    today = datetime.now()
     # dna_seq = DNASeq(virus_list=["Coronaviridae", "InfluenzaA", "Metapneumovirus", "Rhinovirus", "SarsCov2"])
-    dna_seq = DNASeq(virus_list=["Coronaviridae", "SarsCov2"])
+    dna_seq = DNASeq(virus_list=["Coronaviridae", "InfluenzaA", "Rhinovirus", "SarsCov2"])
+    # dna_seq = DNASeq(virus_list=["Coronaviridae", "SarsCov2"])
     # dna_seq = DNASeq(virus_list=["InfluenzaA", "Metapneumovirus", "Rhinovirus"])
     token_frags_list, labels_list = dna_seq.generate_tokens_and_labels_from_scratch()
     data_set = DataSet(dna_seq.Viruses_list)
@@ -35,19 +38,19 @@ if __name__ == '__main__':
 
     # Save Checkpoint
     ckpt = tf.train.Checkpoint(model=model)
-    checkpoint_name = '../Checkpoints/Logisticregression_January2023'
+    checkpoint_name = '../Checkpoints/' + today.strftime('%d_%m_%Y-%H_%M')
     ckpt.save(file_prefix=checkpoint_name)
     # ckpt.restore(checkpoint_name)
-    log_folder = LogFolder(checkpoint_path=checkpoint_name + "-1.index", tfr_path='../TFRecords', virus_list=dna_seq.Viruses_list,
+    log_folder = LogFolder(time=today, checkpoint_path=checkpoint_name + "-1.index", tfr_path='../TFRecords', virus_list=dna_seq.Viruses_list,
                            len_list=[len(frags) for frags in dna_seq.all_tokened_frags_by_virus],
                            model_name=model.model_name, train_accuracy=fit.history['accuracy'][-1],
                            train_loss=fit.history['loss'][-1], test_loss=test_loss, test_accuracy=test_accuracy)
 
-    # for tokens, labels in test_data_set:
-    #     ret_val = model.call(tokens)
+    for tokens, labels in test_data_set:
+        ret_val = model.call(tokens)
     #     pred_virus_idx = tf.math.argmax(ret_val, axis=1)
     #     print(f"predicted virus in index {pred_virus_idx} , \
-    #     However, labal is {tf.math.argmax(labels, axis=1)}")
+    #     However, label is {tf.math.argmax(labels, axis=1)}")
     #
     #     break
 

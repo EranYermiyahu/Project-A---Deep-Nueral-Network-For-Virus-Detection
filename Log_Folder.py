@@ -9,17 +9,17 @@ import glob
 
 
 class LogFolder:
-    def __init__(self, checkpoint_path, tfr_path, virus_list, len_list, model_name,
+    def __init__(self, time, checkpoint_path, tfr_path, virus_list, len_list, model_name,
                  train_accuracy, test_accuracy, train_loss, test_loss, path='../log_directory/'):
         if os.path.exists(path) is False:
             os.mkdir(path)
         # Create the relevant directories
-        today = datetime.now()
-        self.location_path = path + today.strftime('%d_%m_%Y-%H_%M')
+
+        self.location_path = path + time.strftime('%d_%m_%Y-%H_%M')
         os.mkdir(self.location_path)
 
         with open(self.location_path + '/simulation_details.txt', 'w') as file:
-            data_to_insert = f"Simulation executed on {today.strftime('%Y%m%d%H%M')} details : \n" \
+            data_to_insert = f"Simulation executed on {time.strftime('%Y%m%d%H%M')} details : \n" \
                              f"Viruses Learned are: {len(virus_list)} \n"
             for idx, virus in enumerate(virus_list):
                 virus_detail = f"{virus} : {len_list[idx]} Tokens \n"

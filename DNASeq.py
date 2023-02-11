@@ -48,15 +48,15 @@ class DNASeq:
 
     def set_all_tokened_frags_by_virus(self, tokened_frags_by_vir_list):
         self.all_tokened_frags_by_virus = tokened_frags_by_vir_list
-        # num_of_tokens = []
-        # cut_list = []
-        # for virus in tokened_frags_by_vir_list:
-        #     random.shuffle(virus)
-        #     num_of_tokens.append(len(virus))
-        # exp_size = min(num_of_tokens)
-        # for virus in tokened_frags_by_vir_list:
-        #     cut_list.append(virus[:exp_size])
-        # self.all_tokened_frags_by_virus_balanced = cut_list
+        num_of_tokens = []
+        cut_list = []
+        for virus in tokened_frags_by_vir_list:
+            random.shuffle(virus)
+            num_of_tokens.append(len(virus))
+        exp_size = min(num_of_tokens)
+        for virus in tokened_frags_by_vir_list:
+            cut_list.append(virus[:exp_size])
+        self.all_tokened_frags_by_virus_balanced = cut_list
 
     def create_labels_from_virus_list(self):
         if self.Viruses_list is None:
@@ -129,7 +129,7 @@ class DNASeq:
         list_token_frags = []
         list_labels = []
         for virus_idx in range(self.viruses_num):
-            tokened_frags = self.all_tokened_frags_by_virus[virus_idx] # changed to balanced
+            tokened_frags = self.all_tokened_frags_by_virus_balanced[virus_idx] # changed to balanced
             v_label = self.virus_label_dictionary[self.Viruses_list[virus_idx]]
             # v_path = self.create_single_path(self.Viruses_list[virus_idx])
             list_token_frags.append(tokened_frags)
