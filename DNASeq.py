@@ -10,7 +10,7 @@ import random
 
 class DNASeq:
     def __init__(self, virus_list=["Coronaviridae", "InfluenzaA", "Metapneumovirus", "Rhinovirus", "SarsCov2"],
-                 fasta_files_path='../', fragment_size=150):
+                 fasta_files_path='../Viruses Raw Data/Test_Virus/', fragment_size=150):
         self.Viruses_list = virus_list
         self.viruses_num = len(virus_list)
         self.fragment_size = fragment_size
@@ -110,6 +110,7 @@ class DNASeq:
         broken_frag = np.asarray([char for char in fragment])
         # Create fragsize X 4 matrix from each nucleotide, using map function for converting
         frag_Tensor = np.asarray(list(map(self.char_to_vector, broken_frag.T)))
+        # frag_Tensor = np.expand_dims(frag_Tensor, -1)
         return frag_Tensor
 
     def segment_creation_from_fna(self):

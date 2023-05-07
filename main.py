@@ -7,6 +7,7 @@ import glob
 from DNASeq import DNASeq
 from DataSet import DataSet
 from LogisticRegression import LogisticRegression
+from CNN import CNN
 from Log_Folder import LogFolder
 from itertools import repeat
 
@@ -14,8 +15,8 @@ from itertools import repeat
 if __name__ == '__main__':
 
     today = datetime.now()
-    # dna_seq = DNASeq(virus_list=["Coronaviridae", "InfluenzaA", "Metapneumovirus", "Rhinovirus", "SarsCov2"])
-    dna_seq = DNASeq(virus_list=["Coronaviridae", "InfluenzaA", "Rhinovirus", "SarsCov2"])
+    dna_seq = DNASeq(virus_list=["Coronaviridae", "InfluenzaA", "Metapneumovirus", "Rhinovirus", "SarsCov2"])
+    # dna_seq = DNASeq(virus_list=["Coronaviridae", "InfluenzaA", "Rhinovirus", "SarsCov2"])
     # dna_seq = DNASeq(virus_list=["Coronaviridae", "SarsCov2"])
     # dna_seq = DNASeq(virus_list=["InfluenzaA", "Metapneumovirus", "Rhinovirus"])
     token_frags_list, labels_list = dna_seq.generate_tokens_and_labels_from_scratch()
@@ -27,12 +28,18 @@ if __name__ == '__main__':
     # and config features like epochs batches and shuffle keys.
     train_data_set = data_set.create_train_dataset()
     test_data_set = data_set.create_test_dataset()
-    #data_set.print_labels_histogram(train_data_set, dna_seq.virus_label_dictionary)
+    # data_set.print_labels_histogram(train_data_set, dna_seq.virus_label_dictionary)
 
     # Create model and train it
     print("========= Finished DataSet Creation - Define model and train it =========")
-    model = LogisticRegression(input_shape=(4, 150), num_classes=data_set.viruses_num)
+    # model = LogisticRegression(input_shape=(4, 150), num_classes=data_set.viruses_num)
+    model = CNN(input_shape=(150, 4, 1), num_classes=data_set.viruses_num)
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    # train_data_set = tf.expand_dims(train_data_set, axis=-1)
+    # train_data_set = tf.repeat(train_data_set, 3, axis=-1)
+    #
+    # test_data_set = tf.expand_dims(test_data_set, axis=-1)
+    # test_data_set = tf.repeat(test_data_set, 3, axis=-1)
     fit = model.fit(train_data_set)
     test_loss, test_accuracy = model.evaluate(test_data_set)
 
