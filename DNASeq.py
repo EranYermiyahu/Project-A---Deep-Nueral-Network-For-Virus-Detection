@@ -10,7 +10,7 @@ import random
 
 class DNASeq:
     def __init__(self, virus_list=["Coronaviridae", "InfluenzaA", "Metapneumovirus", "Rhinovirus", "SarsCov2"],
-                 fasta_files_path='../Viruses Raw Data/Test_Virus/', fragment_size=150):
+                 fasta_files_path='../', fragment_size=150):
         self.Viruses_list = virus_list
         self.viruses_num = len(virus_list)
         self.fragment_size = fragment_size
@@ -54,6 +54,7 @@ class DNASeq:
             random.shuffle(virus)
             num_of_tokens.append(len(virus))
         exp_size = min(num_of_tokens)
+        print(f"numer of fragments for each virus is {exp_size}")
         for virus in tokened_frags_by_vir_list:
             cut_list.append(virus[:exp_size])
         self.all_tokened_frags_by_virus_balanced = cut_list
