@@ -11,6 +11,7 @@ import random
 class DNASeq:
     def __init__(self, virus_list=["Coronaviridae", "InfluenzaA", "Metapneumovirus", "Rhinovirus", "SarsCov2"],
                  fasta_files_path='../', fragment_size=150):
+        self.generated_TFR = False
         self.Viruses_list = virus_list
         self.viruses_num = len(virus_list)
         self.fragment_size = fragment_size
@@ -143,6 +144,7 @@ class DNASeq:
     # Return: list_token_frags- list in viruses number len of all token frags for each virus
     #         list_labels- list in viruses number len of the label for each virus
     def generate_tokens_and_labels_from_scratch(self):
+        self.generated_TFR = True
         self.segment_creation_from_fna()
         self.all_viruses_fragments()
         return self.get_token_frags_and_labels()

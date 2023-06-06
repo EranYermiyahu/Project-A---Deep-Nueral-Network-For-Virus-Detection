@@ -21,9 +21,10 @@ class LogFolder:
         with open(self.location_path + '/simulation_details.txt', 'w') as file:
             data_to_insert = f"Simulation executed on {time.strftime('%Y%m%d%H%M')} details : \n" \
                              f"Viruses Learned are: {len(virus_list)} \n"
-            for idx, virus in enumerate(virus_list):
-                virus_detail = f"{virus} : {len_list[idx]} Tokens \n"
-                data_to_insert += virus_detail
+            if len_list is not None:
+                for idx, virus in enumerate(virus_list):
+                    virus_detail = f"{virus} : {len_list[idx]} Tokens \n"
+                    data_to_insert += virus_detail
 
             model_detail = f"\n\nThe Training Model Is: {model_name}\n" \
                            f"Training Accuracy: {train_accuracy} and Loss: {train_loss}\n " \
