@@ -10,10 +10,10 @@ import matplotlib.pyplot as plt
 import pickle
 from itertools import repeat
 
-EPOCHS = 300
+EPOCHS = 100
 BATCH_SIZE = 4096
 
-def get_train_test_dataset(virus_list, create_tfr_files=False)
+def get_train_test_dataset(virus_list, create_tfr_files=False):
     dna_seq = DNASeq(virus_list=virus_list)
     data_set = DataSet(dna_seq.Viruses_list)
     if create_tfr_files:
@@ -26,6 +26,7 @@ def get_train_test_dataset(virus_list, create_tfr_files=False)
     print("========= Finished DataSet Creation - Define model and train it =========")
     return dna_seq, (train_data_set, test_data_set)
 
+
 def train_model(model, train_data, optimizer='adam', loss='categorical_crossentropy'):
     model.compile(optimizer=optimizer, loss=loss,
                   metrics=['accuracy', tf.keras.metrics.Precision(), tf.keras.metrics.Recall()])
@@ -33,16 +34,24 @@ def train_model(model, train_data, optimizer='adam', loss='categorical_crossentr
     return fit
 
 
+def check_gpu():
+    print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 
 if __name__ == '__main__':
     today = datetime.now()
-    virus_class_list = ["Coronaviridae", "InfluenzaA", "Rhinovirus", "SarsCov2", "Adenovirus", "RSV"]
-    dna_seq, dataset_tuple = get_train_test_dataset(virus_class_list, create_tfr_files=False)
+    check_gpu()
+    virus_class_list = ["Coronaviridae", "InfluenzaA", "Rhinovirus", "SarsCov2"]#, "Adenovirus", "RSV"]
+    dna_seq, dataset_tuple = get_train_test_dataset(virus_class_list, create_tfr_files=True)
 
     train_dataset = dataset_tuple[0]
     test_dataset = dataset_tuple[1]
-    model = CNN(input_shape=(dna_seq.fragment_size, 4, 1), num_classes=dna_seq.viruses_num, name='CNN_3_layers')
+    input_dim = (dna_seq.fragment_size, 4, 1)
+
+    # Define Model
+    # model = CNN(input_shape=input_dim, num_classes=dna_seq.viruses_num, name='CNN_3_layers')
+    model = LogisticRegression(input_shape=input_dim, num_classes=dna_seq.viruses_num)
+
     fit = train_model(model, train_dataset)
     evaluation_results = model.evaluate(test_dataset)
 
@@ -69,10 +78,10 @@ if __name__ == '__main__':
                            test_loss=evaluation_results[0], test_accuracy=evaluation_results[1])
 
     train_loss = fit.history['loss']
-    val_loss = fit.history['val_loss']
+    # val_loss = fit.history['val_loss']
 
     plt.plot(range(1, EPOCHS + 1), train_loss, label='Training Loss')
-    plt.plot(range(1, EPOCHS + 1), val_loss, label='Validation Loss')
+    # plt.plot(range(1, EPOCHS + 1), val_loss, label='Validation Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.title('Training and Validation Loss')

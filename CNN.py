@@ -13,22 +13,16 @@ class CNN(keras.Model):
         self.model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(32, (9, 4), activation='relu', input_shape=input_shape, kernel_initializer='he_normal'),
             # 32*142*1
-            tf.keras.layers.Dropout(0.1),
             tf.keras.layers.Conv2D(64, (15, 1), activation='relu', kernel_initializer='he_normal'),
             # 64*128*1
-            tf.keras.layers.Dropout(0.1),
             tf.keras.layers.MaxPooling2D(pool_size=(2, 1)),
             # 64*64*1
-            tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Conv2D(128, (15, 1), activation='relu', kernel_initializer='he_normal'),
-            tf.keras.layers.Dropout(0.1),
             # 128*50*1
             tf.keras.layers.MaxPooling2D(pool_size=(2, 1)),
             # 128*25*1
-            tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(num_classes, activation='softmax',
-                         activity_regularizer=tf.keras.regularizers.L2(0.1))
+            tf.keras.layers.Dense(num_classes, activation='softmax')
         ])
         self.model_name = name
 
