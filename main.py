@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import pickle
 from itertools import repeat
 
+EPOCHS = 300
+BATCH_SIZE = 4096
 
 def get_train_test_dataset(virus_list, create_tfr_files=False)
     dna_seq = DNASeq(virus_list=virus_list)
@@ -19,7 +21,7 @@ def get_train_test_dataset(virus_list, create_tfr_files=False)
         data_set.create_tfrecords(token_frags_list, labels_list)
 
     print("========= Created TFRecords - start to build Dataset =========")
-    train_data_set = data_set.create_train_dataset()
+    train_data_set = data_set.create_train_dataset(train_batch_size=BATCH_SIZE)
     test_data_set = data_set.create_test_dataset()
     print("========= Finished DataSet Creation - Define model and train it =========")
     return dna_seq, (train_data_set, test_data_set)
@@ -27,7 +29,7 @@ def get_train_test_dataset(virus_list, create_tfr_files=False)
 def train_model(model, train_data, optimizer='adam', loss='categorical_crossentropy'):
     model.compile(optimizer=optimizer, loss=loss,
                   metrics=['accuracy', tf.keras.metrics.Precision(), tf.keras.metrics.Recall()])
-    fit = model.fit(train_data)
+    fit = model.fit(train_data, epochs=EPOCHS)
     return fit
 
 
@@ -40,7 +42,7 @@ if __name__ == '__main__':
 
     train_dataset = dataset_tuple[0]
     test_dataset = dataset_tuple[1]
-    model = CNN(input_shape=(150, 4, 1), num_classes=data_set.viruses_num, name='CNN_3_layers')
+    model = CNN(input_shape=(dna_seq.fragment_size, 4, 1), num_classes=dna_seq.viruses_num, name='CNN_3_layers')
     fit = train_model(model, train_dataset)
     evaluation_results = model.evaluate(test_dataset)
 
@@ -66,12 +68,15 @@ if __name__ == '__main__':
                            train_loss=fit.history['loss'][-1],
                            test_loss=evaluation_results[0], test_accuracy=evaluation_results[1])
 
-    # Test section - need to check
-    # Plot the loss vs. epochs
-    plt.plot(range(1, 500 + 1), fit.history['loss'])
-    plt.title('Loss vs. Epochs')
-    plt.xlabel('Epoch')
-    plt.ylabel('Train Loss')
+    train_loss = fit.history['loss']
+    val_loss = fit.history['val_loss']
+
+    plt.plot(range(1, EPOCHS + 1), train_loss, label='Training Loss')
+    plt.plot(range(1, EPOCHS + 1), val_loss, label='Validation Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Training and Validation Loss')
+    plt.legend()
     plt.show()
 
 

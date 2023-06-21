@@ -34,7 +34,7 @@ class DataSet:
                     prefetch(tf.data.AUTOTUNE)
         return config_data_set
 
-    def create_train_dataset(self, epochs=300, train_batch_size=4096, shuffle_buffer_size=4096):
+    def create_train_dataset(self, epochs=1, train_batch_size=4096, shuffle_buffer_size=4096):
         filepath_dataset = tf.data.Dataset.list_files(self.get_train_tfr_paths())
         train_dataset_raw = filepath_dataset.interleave(map_func=lambda filepath: tf.data.TFRecordDataset(filepath),
                                                         num_parallel_calls=tf.data.AUTOTUNE,
