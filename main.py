@@ -4,6 +4,7 @@ from datetime import datetime
 from DNASeq import DNASeq
 from DataSet import DataSet
 from LogisticRegression import LogisticRegression
+from CNN_3layer_extra import CNNExtended
 from CNN import CNN
 from Log_Folder import LogFolder
 import matplotlib.pyplot as plt
@@ -42,15 +43,16 @@ if __name__ == '__main__':
     today = datetime.now()
     check_gpu()
     virus_class_list = ["Coronaviridae", "InfluenzaA", "Rhinovirus", "SarsCov2"]#, "Adenovirus", "RSV"]
-    dna_seq, dataset_tuple = get_train_test_dataset(virus_class_list, create_tfr_files=True)
+    dna_seq, dataset_tuple = get_train_test_dataset(virus_class_list, create_tfr_files=False)
 
     train_dataset = dataset_tuple[0]
     test_dataset = dataset_tuple[1]
     input_dim = (dna_seq.fragment_size, 4, 1)
 
     # Define Model
+    # model = LogisticRegression(input_shape=input_dim, num_classes=dna_seq.viruses_num)
     # model = CNN(input_shape=input_dim, num_classes=dna_seq.viruses_num, name='CNN_3_layers')
-    model = LogisticRegression(input_shape=input_dim, num_classes=dna_seq.viruses_num)
+    model = CNNExtended(input_shape=input_dim, num_classes=dna_seq.viruses_num, name='CNN_3_Extended')
 
     fit = train_model(model, train_dataset)
     evaluation_results = model.evaluate(test_dataset)

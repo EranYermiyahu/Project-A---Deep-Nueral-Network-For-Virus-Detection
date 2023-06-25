@@ -3,10 +3,10 @@ import tensorflow as tf
 from tensorflow import keras
 
 
-class CNN(keras.Model):
+class CNNExtended(keras.Model):
     def __init__(self, input_shape, num_classes, name='CNN_extra'):
         # Initialize the father -  requires to implement abstracts
-        super(CNN, self).__init__(name=name)
+        super(CNNExtended, self).__init__(name=name)
         # Layers
         self.num_classes = num_classes
 
