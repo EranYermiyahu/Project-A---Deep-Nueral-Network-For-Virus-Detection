@@ -9,6 +9,8 @@ from CNN import CNN
 from Log_Folder import LogFolder
 import matplotlib.pyplot as plt
 import pickle
+
+
 from itertools import repeat
 
 EPOCHS = 100
@@ -30,7 +32,8 @@ def get_train_test_dataset(virus_list, create_tfr_files=False):
 
 def train_model(model, train_data, optimizer='adam', loss='categorical_crossentropy'):
     model.compile(optimizer=optimizer, loss=loss,
-                  metrics=['accuracy', tf.keras.metrics.Precision(), tf.keras.metrics.Recall()])
+                  metrics=['accuracy', tf.keras.metrics.Precision(), tf.keras.metrics.Recall(),
+                           tf.keras.metrics.TopKCategoricalAccuracy(k=3)])
     fit = model.fit(train_data, epochs=EPOCHS)
     return fit
 
@@ -42,53 +45,68 @@ def check_gpu():
 if __name__ == '__main__':
     today = datetime.now()
     check_gpu()
-    virus_class_list = ["Coronaviridae", "InfluenzaA", "Rhinovirus", "SarsCov2"]#, "Adenovirus", "RSV"]
-    dna_seq, dataset_tuple = get_train_test_dataset(virus_class_list, create_tfr_files=False)
+    virus_class_list = ["Coronaviridae", "InfluenzaA", "Rhinovirus", "SarsCov2", "Adenovirus", "RSV", "Human"]
+    dna_seq, dataset_tuple = get_train_test_dataset(virus_class_list, create_tfr_files=True)
 
     train_dataset = dataset_tuple[0]
     test_dataset = dataset_tuple[1]
     input_dim = (dna_seq.fragment_size, 4, 1)
 
     # Define Model
-    # model = LogisticRegression(input_shape=input_dim, num_classes=dna_seq.viruses_num)
-    # model = CNN(input_shape=input_dim, num_classes=dna_seq.viruses_num, name='CNN_3_layers')
-    model = CNNExtended(input_shape=input_dim, num_classes=dna_seq.viruses_num, name='CNN_3_Extended')
+    model_LR = LogisticRegression(input_shape=input_dim, num_classes=dna_seq.viruses_num)
+    model_CNN = CNN(input_shape=input_dim, num_classes=dna_seq.viruses_num, name='CNN_3_layers')
+    model_CNNEx = CNNExtended(input_shape=input_dim, num_classes=dna_seq.viruses_num, name='CNN_3_Extended')
 
-    fit = train_model(model, train_dataset)
-    evaluation_results = model.evaluate(test_dataset)
+    for i in range(3):
+        stats_dict = {}
+        if i == 0:
+            model = model_LR
+        elif i == 1:
+            model = model_CNN
+        else:
+            model = model_CNNEx
 
-    # Start to save the results
-    # Save Checkpoint
-    ckpt = tf.train.Checkpoint(model=model)
-    checkpoint_name = f'../Checkpoints/model_{model.model_name}_{dna_seq.viruses_num}viruses' + today.strftime('%d_%m_%Y-%H_%M')
-    ckpt.save(file_prefix=checkpoint_name)
-    history_name = f'../History/model_{model.model_name}_{dna_seq.viruses_num}viruses' + today.strftime('%d_%m_%Y-%H_%M') + '.pickle'
-    with open(history_name, 'wb') as file:
-        pickle.dump(fit.history, file)
-    # ckpt.restore(checkpoint_name)
+        fit = train_model(model, train_dataset)
+        evaluation_results = model.evaluate(test_dataset)
 
-    # Distinguish between TFR creation scenario and Ready TFR scenario
-    if dna_seq.generated_TFR:
-        len_list = [len(frags) for frags in dna_seq.all_tokened_frags_by_virus]
-    else:
-        len_list = None
-    log_folder = LogFolder(time=today, checkpoint_path=checkpoint_name + "-1.index",
-                           tfr_path='../TFRecords', virus_list=dna_seq.Viruses_list,
-                           len_list=len_list,
-                           model_name=model.model_name, train_accuracy=fit.history['accuracy'][-1],
-                           train_loss=fit.history['loss'][-1],
-                           test_loss=evaluation_results[0], test_accuracy=evaluation_results[1])
+        stats_dict['training history'] = fit.history
+        stats_dict['evaluation results'] = evaluation_results
 
-    train_loss = fit.history['loss']
-    # val_loss = fit.history['val_loss']
+        # Start to save the results
+        # Save Checkpoint
+        ckpt = tf.train.Checkpoint(model=model)
+        checkpoint_name = f'../Checkpoints/model_{model.model_name}_{dna_seq.viruses_num}viruses' + today.strftime('%d_%m_%Y-%H_%M')
+        ckpt.save(file_prefix=checkpoint_name)
+        history_name = f'../History/model_{model.model_name}_{dna_seq.viruses_num}viruses' + today.strftime('%d_%m_%Y-%H_%M') + '.pickle'
+        with open(history_name, 'wb') as file:
+            pickle.dump(stats_dict, file)
+        # ckpt.restore(checkpoint_name)
 
-    plt.plot(range(1, EPOCHS + 1), train_loss, label='Training Loss')
-    # plt.plot(range(1, EPOCHS + 1), val_loss, label='Validation Loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.title('Training and Validation Loss')
-    plt.legend()
-    plt.show()
+        # Distinguish between TFR creation scenario and Ready TFR scenario
+        if dna_seq.generated_TFR:
+            len_list = [len(frags) for frags in dna_seq.all_tokened_frags_by_virus]
+        else:
+            len_list = None
+        log_folder = LogFolder(time=today, checkpoint_path=checkpoint_name + "-1.index",
+                               tfr_path='../TFRecords', virus_list=dna_seq.Viruses_list,
+                               len_list=len_list,
+                               model_name=model.model_name, train_accuracy=fit.history['accuracy'][-1],
+                               train_loss=fit.history['loss'][-1],
+                               test_loss=evaluation_results[0], test_accuracy=evaluation_results[1])
+
+
+
+
+    # train_loss = fit.history['loss']
+    # # val_loss = fit.history['val_loss']
+    #
+    # plt.plot(range(1, EPOCHS + 1), train_loss, label='Training Loss')
+    # # plt.plot(range(1, EPOCHS + 1), val_loss, label='Validation Loss')
+    # plt.xlabel('Epochs')
+    # plt.ylabel('Loss')
+    # plt.title('Training and Validation Loss')
+    # plt.legend()
+    # plt.show()
 
 
 
